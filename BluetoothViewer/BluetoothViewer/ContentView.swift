@@ -10,13 +10,12 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject private var bluetoothViewModel = BluetoothViewModel()
+    @EnvironmentObject private var bluetoothViewModel: BluetoothViewModel
 
     var body: some View {
         NavigationView {
             List {
-                ForEach(sortedPeripherals(), id: \.peripheral.identifier) {
-                    item in
+                ForEach(sortedPeripherals(), id: \.peripheral.identifier) { item in
                     PeripheralRow(peripheral: item.peripheral, rssi: item.rssi)
                 }
             }

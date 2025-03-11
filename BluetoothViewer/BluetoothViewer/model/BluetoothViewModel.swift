@@ -10,6 +10,7 @@ import SwiftUI
 
 class BluetoothViewModel: NSObject, ObservableObject {
     private var centralManager: CBCentralManager?
+    private var isScanning = false
 
     // Published list of (Peripheral, RSSI) for display
     @Published var peripherals: [(peripheral: CBPeripheral, rssi: NSNumber)] = []
@@ -37,10 +38,14 @@ class BluetoothViewModel: NSObject, ObservableObject {
     }
 
     // MARK: - Scanning
-    private func startScanning() {
-        guard let central = centralManager, central.state == .poweredOn else { return }
+    func startScanning() {
+        guard let central = centralManager,
+                      central.state == .poweredOn,
+                      !isScanning
+        else { return }
 
         print("Starting Bluetooth Scan...")
+        isScanning = true
         central.scanForPeripherals(
             withServices: nil,
             options: [CBCentralManagerScanOptionAllowDuplicatesKey: true]
@@ -58,6 +63,16 @@ class BluetoothViewModel: NSObject, ObservableObject {
         ) { _ in
             self.cleanupOldDevices()
         }
+    }
+    
+    func stopScanning() {
+        guard isScanning else { return }
+        
+        print("Stopping Bluetooth Scan...")
+        isScanning = false
+        centralManager?.stopScan()
+        scanTimer?.invalidate()
+        cleanupTimer?.invalidate()
     }
 
     private func restartScanning() {
