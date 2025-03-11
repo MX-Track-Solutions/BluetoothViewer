@@ -16,7 +16,12 @@ struct ContentView: View {
         NavigationView {
             List {
                 ForEach(sortedPeripherals(), id: \.peripheral.identifier) { item in
-                    PeripheralRow(peripheral: item.peripheral, rssi: item.rssi)
+                    NavigationLink(
+                        destination: PeripheralDetailView(peripheral: item.peripheral)
+                            .environmentObject(bluetoothViewModel)
+                    ) {
+                        PeripheralRow(peripheral: item.peripheral, rssi: item.rssi)
+                    }
                 }
             }
             .navigationTitle("Nearby Devices")
