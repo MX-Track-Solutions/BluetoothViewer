@@ -16,8 +16,7 @@ class BluetoothViewModel: NSObject, ObservableObject {
     @Published var peripherals: [(peripheral: CBPeripheral, rssi: NSNumber)] = []
 
     // Dictionary to track discovered peripherals
-    private var discoveredPeripherals:
-[UUID: (peripheral: CBPeripheral, rssi: NSNumber, lastSeen: Date)] = [:]
+    private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, rssi: NSNumber, lastSeen: Date)] = [:]
 
     // Track last update time to throttle UI updates
     private var lastUpdateTime: [UUID: Date] = [:]
