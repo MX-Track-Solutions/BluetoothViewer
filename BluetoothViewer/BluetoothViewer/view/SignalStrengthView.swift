@@ -18,10 +18,7 @@ struct SignalStrengthView: View {
         HStack(spacing: 2) {
             ForEach(1...5, id: \.self) { level in
                 Rectangle()
-                    .fill(
-                        level <= strength.bars
-                            ? strength.color : Color.gray.opacity(0.3)
-                    )
+                    .fill(level <= strength.bars ? strength.color : Color.gray.opacity(0.3))
                     .frame(width: 6, height: CGFloat(level * 5))
                     .cornerRadius(2)
             }

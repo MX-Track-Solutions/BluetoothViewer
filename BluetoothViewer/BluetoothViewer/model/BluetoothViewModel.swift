@@ -12,12 +12,11 @@ class BluetoothViewModel: NSObject, ObservableObject {
     private var centralManager: CBCentralManager?
 
     // Published list of (Peripheral, RSSI) for display
-    @Published var peripherals: [(peripheral: CBPeripheral, rssi: NSNumber)] =
-        []
+    @Published var peripherals: [(peripheral: CBPeripheral, rssi: NSNumber)] = []
 
     // Dictionary to track discovered peripherals
     private var discoveredPeripherals:
-        [UUID: (peripheral: CBPeripheral, rssi: NSNumber, lastSeen: Date)] = [:]
+[UUID: (peripheral: CBPeripheral, rssi: NSNumber, lastSeen: Date)] = [:]
 
     // Track last update time to throttle UI updates
     private var lastUpdateTime: [UUID: Date] = [:]
@@ -39,9 +38,7 @@ class BluetoothViewModel: NSObject, ObservableObject {
 
     // MARK: - Scanning
     private func startScanning() {
-        guard let central = centralManager,
-            central.state == .poweredOn
-        else { return }
+        guard let central = centralManager, central.state == .poweredOn else { return }
 
         print("Starting Bluetooth Scan...")
         central.scanForPeripherals(
@@ -50,9 +47,7 @@ class BluetoothViewModel: NSObject, ObservableObject {
         )
 
         scanTimer?.invalidate()
-        scanTimer = Timer.scheduledTimer(
-            withTimeInterval: scanRestartInterval, repeats: true
-        ) { _ in
+        scanTimer = Timer.scheduledTimer(withTimeInterval: scanRestartInterval, repeats: true) { _ in
             self.restartScanning()
         }
 
