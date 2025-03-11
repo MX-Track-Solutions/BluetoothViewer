@@ -5,16 +5,16 @@
 //  Created by Bram on 11/03/2025.
 //
 
-import SwiftUICore
 import CoreBluetooth
+import SwiftUICore
 
 struct PeripheralRow: View {
     let peripheral: CBPeripheral
     let rssi: NSNumber
-    
+
     var body: some View {
         let strength = rssi.intValue.signalStrength
-        
+
         HStack(spacing: 15) {
             Image(systemName: "antenna.radiowaves.left.and.right")
                 .resizable()
@@ -31,7 +31,7 @@ struct PeripheralRow: View {
                     .foregroundColor(.gray)
             }
             Spacer()
-            
+
             // Bars
             SignalStrengthView(rssi: rssi.intValue)
         }

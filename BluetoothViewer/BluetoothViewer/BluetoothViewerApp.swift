@@ -5,8 +5,8 @@
 //  Created by Bram on 11/03/2025.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct ChatPrototypeApp: App {
