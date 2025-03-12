@@ -15,7 +15,6 @@ extension BluetoothViewModel {
         
         // Avoid re-connecting if it's already connected
         if peripheral.state != .connected {
-            print("Connecting to \(peripheral.name ?? "Unknown")...")
             central.connect(peripheral, options: nil)
         }
     }
@@ -26,7 +25,6 @@ extension BluetoothViewModel {
         
         // Only disconnect if it's currently connected
         if peripheral.state == .connected {
-            print("Disconnecting from \(peripheral.name ?? "Unknown")...")
             central.cancelPeripheralConnection(peripheral)
         }
     }
@@ -83,6 +81,5 @@ extension BluetoothViewModel: CBPeripheralDelegate {
              print("Error discovering characteristics: \(error.localizedDescription)")
              return
          }
-         // Handle discovered characteristics...
      }
 }
