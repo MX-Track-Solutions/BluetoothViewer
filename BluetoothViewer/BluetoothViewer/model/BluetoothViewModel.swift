@@ -40,8 +40,8 @@ class BluetoothViewModel: NSObject, ObservableObject {
     // MARK: - Scanning
     func startScanning() {
         guard let central = centralManager,
-                      central.state == .poweredOn,
-                      !isScanning
+            central.state == .poweredOn,
+            !isScanning
         else { return }
 
         print("Starting Bluetooth Scan...")
@@ -64,10 +64,10 @@ class BluetoothViewModel: NSObject, ObservableObject {
             self.cleanupOldDevices()
         }
     }
-    
+
     func stopScanning() {
         guard isScanning else { return }
-        
+
         print("Stopping Bluetooth Scan...")
         isScanning = false
         centralManager?.stopScan()
@@ -92,9 +92,10 @@ class BluetoothViewModel: NSObject, ObservableObject {
     public func cleanupOldDevices() {
         let now = Date()
 
-        // Filter out devices not seen within `timeoutDuration`
+        // Filter out devices not seen within `timeoutDuration`, unless they are connected
         discoveredPeripherals = discoveredPeripherals.filter { _, value in
-            now.timeIntervalSince(value.lastSeen) < timeoutDuration
+            let isConnected = value.peripheral.state == .connected
+            return isConnected || now.timeIntervalSince(value.lastSeen) < timeoutDuration
         }
 
         // Preserve old order while rebuilding the list

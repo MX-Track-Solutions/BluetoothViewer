@@ -40,10 +40,7 @@ extension BluetoothViewModel {
         // Update published property
         connectedPeripheral = peripheral
         
-        // (Optional) Set the peripheral’s delegate if you need service/characteristic discovery
         peripheral.delegate = self
-        
-        // (Optional) Discover all services here, or specify which services you want
         peripheral.discoverServices(nil)
     }
     
@@ -67,7 +64,7 @@ extension BluetoothViewModel {
     }
 }
 
-// MARK: - (Optional) CBPeripheralDelegate
+// MARK: - CBPeripheralDelegate
 extension BluetoothViewModel: CBPeripheralDelegate {
      func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
          if let error = error {
