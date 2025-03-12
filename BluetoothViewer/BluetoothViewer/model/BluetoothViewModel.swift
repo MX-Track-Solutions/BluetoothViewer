@@ -9,22 +9,23 @@ import CoreBluetooth
 import SwiftUI
 
 class BluetoothViewModel: NSObject, ObservableObject {
-    private var centralManager: CBCentralManager?
+    public var centralManager: CBCentralManager?
     private var isScanning = false
 
     // Published list of (Peripheral, RSSI) for display
     @Published var peripherals: [(peripheral: CBPeripheral, rssi: NSNumber)] = []
+    @Published var connectedPeripheral: CBPeripheral? = nil
 
     // Dictionary to track discovered peripherals
-    private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, rssi: NSNumber, lastSeen: Date)] = [:]
+    public var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, rssi: NSNumber, lastSeen: Date)] = [:]
 
     // Track last update time to throttle UI updates
-    private var lastUpdateTime: [UUID: Date] = [:]
+    public var lastUpdateTime: [UUID: Date] = [:]
 
     // Configuration
-    private let rssiThreshold: Int = -70  // Only show devices >= -70 dBm
+    public let rssiThreshold: Int = -70  // Only show devices >= -70 dBm
     private let timeoutDuration: TimeInterval = 6.0
-    private let minUpdateInterval: TimeInterval = 1.0
+    public let minUpdateInterval: TimeInterval = 1.0
     private let scanRestartInterval: TimeInterval = 10.0
 
     private var scanTimer: Timer?
@@ -78,7 +79,6 @@ class BluetoothViewModel: NSObject, ObservableObject {
         guard let central = centralManager, central.state == .poweredOn else {
             return
         }
-        print("Restarting Bluetooth Scan...")
 
         central.stopScan()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -89,7 +89,7 @@ class BluetoothViewModel: NSObject, ObservableObject {
         }
     }
 
-    private func cleanupOldDevices() {
+    public func cleanupOldDevices() {
         let now = Date()
 
         // Filter out devices not seen within `timeoutDuration`
@@ -112,80 +112,5 @@ class BluetoothViewModel: NSObject, ObservableObject {
                 peripherals.append((newEntry.peripheral, newEntry.rssi))
             }
         }
-
-        // Debugging
-        print("Cleanup: \(peripherals.count) devices remain")
-    }
-}
-
-// MARK: - CBCentralManagerDelegate
-extension BluetoothViewModel: CBCentralManagerDelegate {
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        if central.state == .poweredOn {
-            // Auto-start scanning
-            startScanning()
-        } else {
-            // Clear out any known devices
-            peripherals.removeAll()
-            discoveredPeripherals.removeAll()
-            lastUpdateTime.removeAll()
-        }
-    }
-
-    func centralManager(
-        _ central: CBCentralManager,
-        didDiscover peripheral: CBPeripheral,
-        advertisementData: [String: Any],
-        rssi RSSI: NSNumber
-    ) {
-        var measuredRSSI = RSSI.intValue
-
-        // Filter out impossible (positive) RSSI
-        if measuredRSSI > 0 {
-            measuredRSSI = 0
-        }
-
-        // Respect threshold
-        guard measuredRSSI >= rssiThreshold else { return }
-
-        // Check device name from advertisement
-        let localName =
-            advertisementData[CBAdvertisementDataLocalNameKey] as? String
-        let deviceName = peripheral.name ?? localName
-        guard deviceName != nil else {
-            // Skip if there's no name at all (remove this if you want unnamed)
-            return
-        }
-
-        let now = Date()
-
-        // Throttle updates
-        if let lastUpdate = lastUpdateTime[peripheral.identifier],
-            now.timeIntervalSince(lastUpdate) < minUpdateInterval
-        {
-            return
-        }
-
-        // RSSI smoothing
-        if let existing = discoveredPeripherals[peripheral.identifier] {
-            let oldRSSI = existing.rssi.intValue
-            let averaged = (oldRSSI + measuredRSSI) / 2
-            discoveredPeripherals[peripheral.identifier] = (
-                peripheral,
-                NSNumber(value: averaged),
-                now
-            )
-        } else {
-            discoveredPeripherals[peripheral.identifier] = (
-                peripheral,
-                NSNumber(value: measuredRSSI),
-                now
-            )
-        }
-
-        lastUpdateTime[peripheral.identifier] = now
-
-        // Refresh the published list
-        cleanupOldDevices()
     }
 }

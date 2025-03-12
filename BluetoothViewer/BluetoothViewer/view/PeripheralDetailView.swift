@@ -5,12 +5,16 @@
 //  Created by Bram on 11/03/2025.
 //
 
-import SwiftUI
 import CoreBluetooth
+import SwiftUI
 
 struct PeripheralDetailView: View {
     @EnvironmentObject var bluetoothViewModel: BluetoothViewModel
     let peripheral: CBPeripheral
+    
+    private var isConnected: Bool {
+            peripheral.state == .connected
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -22,20 +26,21 @@ struct PeripheralDetailView: View {
             Text("Identifier: \(peripheral.identifier.uuidString)")
                 .foregroundColor(.secondary)
 
-            // Connect button
+            // MARK: - Connect/Disconnect Button
             Button(action: {
-                //bluetoothViewModel.connect(peripheral: peripheral)
+                if isConnected {
+                    bluetoothViewModel.disconnect(peripheral: peripheral)
+                } else {
+                    bluetoothViewModel.connect(peripheral: peripheral)
+                }
             }) {
-                Text("Connect")
+                Text(isConnected ? "Disconnect" : "Connect")
                     .font(.headline)
                     .padding()
                     .foregroundColor(.white)
-                    .background(Color.blue)
+                    .background(isConnected ? Color.red : Color.blue)
                     .cornerRadius(8)
             }
-
-            // Text(bluetoothViewModel.connectionState(for: peripheral))
-            //     .foregroundColor(.gray)
 
             Spacer()
         }
