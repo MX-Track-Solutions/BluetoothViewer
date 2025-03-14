@@ -10,19 +10,19 @@ import SwiftData
 
 @main
 struct BluetoothViewer: App {
-    @StateObject private var bluetoothViewModel = BluetoothViewModel()
+    @StateObject private var bluetoothManager = BluetoothManager()
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
-            ContentView().environmentObject(bluetoothViewModel)
+            ContentView().environmentObject(bluetoothManager)
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             switch newPhase {
             case .active:
-                bluetoothViewModel.startScanning()
+                _ = bluetoothManager.startScan();
             case .inactive, .background:
-                bluetoothViewModel.stopScanning()
+                bluetoothManager.stopScan()
             @unknown default:
                 break
             }

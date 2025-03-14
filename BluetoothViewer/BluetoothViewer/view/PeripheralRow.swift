@@ -9,11 +9,10 @@ import CoreBluetooth
 import SwiftUICore
 
 struct PeripheralRow: View {
-    let peripheral: CBPeripheral
-    let rssi: NSNumber
+    let peripheral: BluetoothPeripheral
 
     var body: some View {
-        let strength = rssi.intValue.signalStrength
+        let strength = peripheral.RSSI.signalStrength
 
         HStack(spacing: 15) {
             Image(systemName: "antenna.radiowaves.left.and.right")
@@ -24,16 +23,16 @@ struct PeripheralRow: View {
 
             // Device info
             VStack(alignment: .leading, spacing: 4) {
-                Text(peripheral.name ?? "Unknown Device")
+                Text(peripheral.advertisedName)
                     .font(.headline)
-                Text("Signal: \(rssi.intValue) dBm")
+                Text("Signal: \(peripheral.RSSI.intValue) dBm")
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }
             Spacer()
 
             // Bars
-            SignalStrengthView(rssi: rssi.intValue)
+            SignalStrengthView(rssi: peripheral.RSSI)
         }
         .padding(.vertical, 8)
     }

@@ -8,7 +8,7 @@
 import SwiftUICore
 
 struct SignalStrengthView: View {
-    let rssi: Int
+    let rssi: NSNumber
 
     private var strength: SignalStrength {
         rssi.signalStrength

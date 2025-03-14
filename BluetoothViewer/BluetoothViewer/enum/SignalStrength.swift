@@ -15,8 +15,9 @@ enum SignalStrength {
     case weak  // 2 bars
 
     /// Initialize using an RSSI value in dBm.
-    init(rssi: Int) {
-        switch rssi {
+    init(rssi: NSNumber) {
+        let rssiValue = rssi.intValue
+        switch rssiValue {
         case -55...0:
             self = .excellent
         case -65 ... -56:
@@ -48,9 +49,9 @@ enum SignalStrength {
     }
 }
 
-// MARK: - Int Extension
+// MARK: - NSNumber Extension
 
-extension Int {
+extension NSNumber {
     /// Interpret an RSSI (dBm) value as a `SignalStrength`.
     var signalStrength: SignalStrength {
         SignalStrength(rssi: self)

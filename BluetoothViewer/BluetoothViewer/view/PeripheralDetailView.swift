@@ -9,29 +9,29 @@ import CoreBluetooth
 import SwiftUI
 
 struct PeripheralDetailView: View {
-    @EnvironmentObject var bluetoothViewModel: BluetoothViewModel
-    let peripheral: CBPeripheral
+    @EnvironmentObject var bluetoothManager: BluetoothManager
+    let peripheral: BluetoothPeripheral
     
     private var isConnected: Bool {
-            peripheral.state == .connected
+        peripheral.state == .connected
     }
 
     var body: some View {
         VStack(spacing: 20) {
-            Text(peripheral.name ?? "Unknown Device")
+            Text(peripheral.advertisedName)
                 .font(.largeTitle)
                 .padding()
 
             // More device info
-            Text("Identifier: \(peripheral.identifier.uuidString)")
+            Text("Identifier: \(peripheral.basePeripheral.identifier.uuidString)")
                 .foregroundColor(.secondary)
 
             // MARK: - Connect/Disconnect Button
             Button(action: {
-                if isConnected {
-                    bluetoothViewModel.disconnect(peripheral: peripheral)
+                if peripheral.isConnected {
+                    bluetoothManager.disconnect(peripheral)
                 } else {
-                    bluetoothViewModel.connect(peripheral: peripheral)
+                    bluetoothManager.connect(peripheral)
                 }
             }) {
                 Text(isConnected ? "Disconnect" : "Connect")

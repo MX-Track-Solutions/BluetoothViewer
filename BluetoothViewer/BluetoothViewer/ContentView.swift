@@ -10,44 +10,26 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject private var bluetoothViewModel: BluetoothViewModel
+    @EnvironmentObject private var bluetoothManager: BluetoothManager
 
     var body: some View {
         NavigationView {
             List {
-                ForEach(sortedPeripherals(), id: \.peripheral.identifier) { item in
+                ForEach(bluetoothManager.discoveredPeripherals, id: \.basePeripheral.identifier) { item in
                     NavigationLink(
-                        destination: PeripheralDetailView(peripheral: item.peripheral)
-                            .environmentObject(bluetoothViewModel)
+                        destination: PeripheralDetailView(peripheral: item).environmentObject(bluetoothManager)
                     ) {
-                        PeripheralRow(peripheral: item.peripheral, rssi: item.rssi)
+                        PeripheralRow(peripheral: item)
                     }
                 }
+
             }
             .navigationTitle("Nearby Devices")
             .listStyle(PlainListStyle())
         }
     }
-
-    /// Sort by number of bars first (descending), then RSSI (less negative is stronger).
-    private func sortedPeripherals() -> [(
-        peripheral: CBPeripheral, rssi: NSNumber
-    )] {
-        bluetoothViewModel.peripherals.sorted { lhs, rhs in
-            let lhsBars = lhs.rssi.intValue.signalStrength.bars
-            let rhsBars = rhs.rssi.intValue.signalStrength.bars
-
-            if lhsBars != rhsBars {
-                return lhsBars > rhsBars
-            } else {
-                // If the "bars" tie, fall back to the raw RSSI (larger == stronger).
-                return lhs.rssi.intValue > rhs.rssi.intValue
-            }
-        }
-    }
 }
 
 #Preview {
-    ContentView().environmentObject(BluetoothViewModel())
+    ContentView().environmentObject(BluetoothManager())
 }
-
