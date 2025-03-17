@@ -38,6 +38,8 @@ class BluetoothManager: NSObject, ObservableObject {
     @Published private(set) var discoveredPeripherals: [BluetoothPeripheral] = []
     /// The blinky peripheral that this manager is currently connecting or connected to.
     private var connectedPeripheral: BluetoothPeripheral?
+    /// Timer for periodic scanning.
+    private var scanTimer: Timer?
 
     var state: CBManagerState {
         return centralManager.state
@@ -48,21 +50,40 @@ class BluetoothManager: NSObject, ObservableObject {
         centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionShowPowerAlertKey : true])
     }
 
-    func startScan() -> Bool {
-        guard centralManager.state == .poweredOn else {
-            return false
+    func startPeriodicScan(interval: TimeInterval = 5.0, scanDuration: TimeInterval = 2.0) {
+        stopScan() // Ensure previous scan is stopped
+        scanTimer?.invalidate() // Stop any existing timer
+
+        scanTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+            guard let self = self, self.centralManager.state == .poweredOn else { return }
+            self.startScan()
+            DispatchQueue.main.asyncAfter(deadline: .now() + scanDuration) { [weak self] in
+                self?.stopScan()
+            }
         }
+        scanTimer?.fire() // Start scanning immediately
+    }
+
+    func startScan() {
+        guard centralManager.state == .poweredOn else { return }
         if !centralManager.isScanning {
             centralManager.scanForPeripherals(
                 withServices: nil,
-                options: [CBCentralManagerScanOptionAllowDuplicatesKey : true]
+                options: [CBCentralManagerScanOptionAllowDuplicatesKey: true]
             )
         }
-        return true
     }
 
     func stopScan() {
-        centralManager.stopScan()
+        if centralManager.isScanning {
+            centralManager.stopScan()
+        }
+    }
+
+    func stopPeriodicScan() {
+        scanTimer?.invalidate()
+        scanTimer = nil
+        stopScan()
     }
 
     func reset() {
@@ -75,9 +96,7 @@ class BluetoothManager: NSObject, ObservableObject {
 
     /// Connects to the Blinky device.
     func connect(_ blinky: BluetoothPeripheral) {
-        guard state == .poweredOn, connectedPeripheral == nil else {
-            return
-        }
+        guard state == .poweredOn, connectedPeripheral == nil else { return }
         connectedPeripheral = blinky
         print("Connecting to Blinky device...")
         centralManager.connect(blinky.basePeripheral)
@@ -85,9 +104,7 @@ class BluetoothManager: NSObject, ObservableObject {
 
     /// Cancels existing or pending connection.
     func disconnect(_ blinky: BluetoothPeripheral) {
-        guard state == .poweredOn else {
-            return
-        }
+        guard state == .poweredOn else { return }
         guard blinky.state != .disconnected else {
             connectedPeripheral = nil
             return
@@ -95,8 +112,8 @@ class BluetoothManager: NSObject, ObservableObject {
         print("Cancelling connection...")
         centralManager.cancelPeripheralConnection(blinky.basePeripheral)
     }
-
 }
+
 
 extension BluetoothManager: CBCentralManagerDelegate {
 

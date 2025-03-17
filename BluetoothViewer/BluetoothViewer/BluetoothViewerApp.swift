@@ -20,9 +20,9 @@ struct BluetoothViewer: App {
         .onChange(of: scenePhase) { oldPhase, newPhase in
             switch newPhase {
             case .active:
-                _ = bluetoothManager.startScan();
+                bluetoothManager.startPeriodicScan();
             case .inactive, .background:
-                bluetoothManager.stopScan()
+                bluetoothManager.stopPeriodicScan()
             @unknown default:
                 break
             }
