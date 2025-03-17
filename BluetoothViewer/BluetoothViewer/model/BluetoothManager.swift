@@ -50,7 +50,7 @@ class BluetoothManager: NSObject, ObservableObject {
         centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionShowPowerAlertKey : true])
     }
 
-    func startPeriodicScan(interval: TimeInterval = 5.0, scanDuration: TimeInterval = 2.0) {
+    func startPeriodicScan(interval: TimeInterval = 3.0, scanDuration: TimeInterval = 2.0) {
         stopScan() // Ensure previous scan is stopped
         scanTimer?.invalidate() // Stop any existing timer
 
