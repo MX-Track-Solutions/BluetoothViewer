@@ -46,6 +46,8 @@ class BluetoothPeripheral: NSObject, CBPeripheralDelegate, Identifiable {
     public private(set) var advertisedName    : String
     public private(set) var isConnectable     : Bool
     public private(set) var RSSI              : NSNumber
+    public private(set) var ledSupported      : Bool = false
+    public private(set) var buttonSupported   : Bool = false
     
     // MARK: - Computed variables
     
@@ -337,42 +339,38 @@ class BluetoothPeripheral: NSObject, CBPeripheralDelegate, Identifiable {
     }
     
     func peripheral(_ peripheral: CBPeripheral,
-                    didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+                    didDiscoverCharacteristicsFor service: CBService,
+                    error: Error?) {
         guard error == nil else {
             print("Discovering characteristics failed: \(error!.localizedDescription)")
             post(.blinkyDidFailToConnect(self, error: error))
             disconnect()
             return
         }
+        
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                assert(characteristic.service == service)
                 if characteristic.uuid == BluetoothPeripheral.buttonCharacteristicUUID {
                     print("Button characteristic found")
                     buttonCharacteristic = characteristic
+                    buttonSupported = true
                 } else if characteristic.uuid == BluetoothPeripheral.ledCharacteristicUUID {
                     print("LED characteristic found")
                     ledCharacteristic = characteristic
+                    ledSupported = true
                 }
             }
         }
         
         // If Button characteristic was found, try to enable notifications on it.
-        if let _ = buttonCharacteristic {
+        if buttonCharacteristic != nil {
             enableButtonNotifications()
-        } else if let _ = ledCharacteristic {
-            // else, notify the delegate and read LED state.
-            post(.blinky(self,
-                    didBecameReadyWithLedSupported: true,
-                    buttonSupported: false)
-            )
+        } else if ledCharacteristic != nil {
+            post(.blinky(self, didBecameReadyWithLedSupported: true, buttonSupported: false))
             readLEDValue()
         } else {
             print("Device not supported: Required characteristics not found.")
-            post(.blinky(self,
-                    didBecameReadyWithLedSupported: false,
-                    buttonSupported: false)
-            )
+            post(.blinky(self,didBecameReadyWithLedSupported: false, buttonSupported: false))
         }
     }
     
